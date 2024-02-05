@@ -19,7 +19,7 @@ window = Tk()
 window.title("Bulk Downloader v4")
 frm = ttk.Frame(window, padding=20)
 quit_button = ttk.Button(frm, text="Quit", command=window.destroy)
-file_select_button = ttk.Button(frm, text="Choose File", command=choose_file())
+file_select_button = ttk.Button(frm, text="Choose File", command=askopenfilename)
 
 # Checkbutton widget
 i = IntVar()
