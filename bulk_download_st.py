@@ -53,8 +53,9 @@ def check_unique(path, file_name_widget, row, url):
 def make_output_folder(folder_name=str(date.today())):
     try:
         # Make new folder
+        user_name = getpass.getuser()
         name = folder_name
-        path = f"drive/MyDrive/{name}"
+        path = f"Users/{user_name}/Downloads/{name}"
         os.mkdir(path)
     except:
         pass
@@ -68,7 +69,7 @@ def bulk_download(link_column, uploaded_file):
     # Download if url is present
     with open(csv_name, newline="") as csvfile:
         read_csv = csv.DictReader(csvfile, delimiter=",")
-        for row in tqdm(read_csv, desc="Working..."):
+        for row in read_csv:
             if row[url_column] == "":
                 pass
             else:
