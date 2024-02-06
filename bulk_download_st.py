@@ -10,18 +10,6 @@ import numpy as np
 
 
 # Functions
-def save_image(path, file_name_columns, row, url):
-    """Downloads images from the url to the path.  file_name_columns specifies the name of the downloaded file."""
-    # Make unique file name
-    name = check_unique(path, file_name_columns, row, url)
-
-    # Save file
-    file_name = f"{path}/{name}"
-    img_data = requests.get(url).content
-    with open(f"{file_name}", "wb") as handler:
-        handler.write(img_data)
-
-
 def check_unique(path, file_name_columns, row, url):
     """Ensure Unique File Names"""
     name = "_".join([row[x] for x in file_name_columns]) + "." + url.split(".")[-1]
@@ -40,7 +28,19 @@ def check_unique(path, file_name_columns, row, url):
     return name
 
 
-def bulk_download(link_column, csv_name, file_name_columns, path):
+def save_image(path, file_name_columns, row, url):
+    """Downloads images from the url to the path.  file_name_columns specifies the name of the downloaded file."""
+    # Make unique file name
+    name = check_unique(path, file_name_columns, row, url)
+
+    # Save file
+    file_name = f"{path}/{name}"
+    img_data = requests.get(url).content
+    with open(f"{file_name}", "wb") as handler:
+        handler.write(img_data)
+
+
+def bulk_download(df, link_column, uploaded_file, file_name_columns, path):
     # Make output folder
     try:
         os.mkdir(path)
@@ -50,15 +50,13 @@ def bulk_download(link_column, csv_name, file_name_columns, path):
     # Get URL Columns from Widgets
     link_column = link_column
     csv_name = csv_name
+    df = df.copy()
+    download_links = df[link_column].dropna()
+    df_download = df.iloc[download_links.index]
 
     # Download if url is present
-    with open(csv_name, newline="") as csvfile:
-        read_csv = csv.DictReader(csvfile, delimiter=",")
-        for row in read_csv:
-            if row[link_column] == "" or row[link_column] == np.nan:
-                pass
-            else:
-                save_image(path, file_name_columns, row, row[link_column])
+    for row in df_download:
+        save_image(path, file_name_columns, row, row[link_column])
 
 
 st.write("Bulk Downloader v4")
@@ -91,7 +89,7 @@ file_name_columns = st.multiselect(
 
 # Run Downloader Button
 if st.button("Run Downloader"):
-    bulk_download(link_column, csv_name, file_name_columns, path)
+    bulk_download(df, link_column, csv_name, file_name_columns, path)
 
 
 ## TODO
