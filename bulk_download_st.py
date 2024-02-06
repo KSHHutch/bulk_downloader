@@ -83,7 +83,8 @@ link_column = st.selectbox("Which column has the download link?", column_names)
 folder_name = st.text_input(
     label="Output Folder Name:", value=f"{str(date.today())}-{csv_name}"
 )
-user_name = getpass.getuser()
+# user_name = getpass.getuser()
+user_name = st.text_input(label="Input your computer username:")
 path = f"/Users/{user_name}/Downloads/{folder_name}"
 
 # Select File Name Columns
