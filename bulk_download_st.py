@@ -2,11 +2,9 @@ import streamlit as st
 import pandas as pd
 from datetime import date
 import os
-import csv
 import getpass
 import requests
 import re
-import numpy as np
 
 
 # Functions
@@ -41,6 +39,13 @@ def save_image(path, file_name_columns, row, url):
 
 
 def bulk_download(df, link_column, uploaded_file, file_name_columns, path):
+    """Run the downloader"""
+    # Localize variables
+    file_name_columns = file_name_columns
+    path = path
+    link_column = link_column
+    df = df.copy()
+
     # Make output folder
     try:
         os.mkdir(path)
@@ -48,49 +53,42 @@ def bulk_download(df, link_column, uploaded_file, file_name_columns, path):
         pass
 
     # Get URL Columns from Widgets
-    link_column = link_column
-    csv_name = csv_name
-    df = df.copy()
     download_links = df[link_column].dropna()
     df_download = df.iloc[download_links.index]
 
     # Download if url is present
-    for row in df_download:
+    for idx in range(len(df_download)):
+        row = df_download.iloc[idx]
         save_image(path, file_name_columns, row, row[link_column])
 
 
+# Title
 st.write("Bulk Downloader v4")
 
 # Open CSV
 uploaded_file = st.file_uploader(label="Choose a file:", type=["csv"])
-column_names = []
-csv_name = ""
-
+column_names = []  # Avoid streamlit exception
+csv_name = ""  # Avoid streamlit exception
 if uploaded_file is not None:
     df = pd.read_csv(uploaded_file)
     column_names = list(df.columns)
     csv_name = re.split("[\.]", uploaded_file.name)[0]
 
-st.write(f"{csv_name}")
-
 # Select URL Column
 link_column = st.selectbox("Which column has the download link?", column_names)
 
 # Output name and location
-today = str(date.today())
-folder_name = st.text_input(label="Output Folder Name:", value=f"{today}-{csv_name}")
+folder_name = st.text_input(
+    label="Output Folder Name:", value=f"{str(date.today())}-{csv_name}"
+)
 user_name = getpass.getuser()
 path = f"/Users/{user_name}/Downloads/{folder_name}"
 
 # Select File Name Columns
 file_name_columns = st.multiselect(
-    "What information you want in the downloaded file names?", column_names
+    "What information you want in the file names?", column_names
 )
 
 # Run Downloader Button
 if st.button("Run Downloader"):
     bulk_download(df, link_column, csv_name, file_name_columns, path)
-
-
-## TODO
-# Rejigger downloader so it draws on the dataframe made from the CSV to download instead of the raw CSV
