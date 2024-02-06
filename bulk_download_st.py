@@ -5,6 +5,7 @@ import os
 import pandas as pd
 import re
 import requests
+import shutil
 import streamlit as st
 
 
@@ -39,29 +40,25 @@ def save_image(path, file_name_columns, row, url):
         handler.write(img_data)
 
 
-def bulk_download(df, link_column, uploaded_file, file_name_columns, path):
+def bulk_download(df, link_column, uploaded_file, file_name_columns, zip_name):
     """Run the downloader"""
     # Localize variables
     file_name_columns = file_name_columns
-    path = path
     link_column = link_column
     df = df.copy()
-    df = df.astype("str")
-
-    # Make output folder
-    try:
-        os.mkdir(path)
-    except:
-        pass
 
     # Get URL Columns from Widgets
     download_links = df[link_column].dropna()
     df_download = df.iloc[download_links.index]
+    df_download = df_download.astype("str")
 
     # Download if url is present
     for idx in range(len(df_download)):
         row = df_download.iloc[idx]
-        save_image(path, file_name_columns, row, row[link_column])
+        save_image(zip_name, file_name_columns, row, row[link_column])
+
+    # Zip files
+    shutil.make_archive(f"{zip_name}", "zip", zip_name)
 
 
 # Title
@@ -71,21 +68,23 @@ st.write("Bulk Downloader v4")
 uploaded_file = st.file_uploader(label="Choose a file:", type=["csv"])
 column_names = []  # Avoid streamlit exception
 csv_name = ""  # Avoid streamlit exception
+zip_name = ""
 if uploaded_file is not None:
     df = pd.read_csv(uploaded_file)
     column_names = list(df.columns)
     csv_name = re.split("[\.]", uploaded_file.name)[0]
 
+    # Output folder and zip
+    zip_name = f"{str(date.today())}_{csv_name}"
+    try:
+        os.mkdir(zip_name)
+    except:
+        pass
+
+
 # Select URL Column
 link_column = st.selectbox("Which column has the download link?", column_names)
 
-# Output name and location
-folder_name = st.text_input(
-    label="Output Folder Name:", value=f"{str(date.today())}-{csv_name}"
-)
-# user_name = getpass.getuser()
-user_name = st.text_input(label="Input your computer username:")
-path = f"/Users/{user_name}/Downloads/{folder_name}"
 
 # Select File Name Columns
 file_name_columns = st.multiselect(
@@ -94,4 +93,20 @@ file_name_columns = st.multiselect(
 
 # Run Downloader Button
 if st.button("Run Downloader"):
-    bulk_download(df, link_column, csv_name, file_name_columns, path)
+    bulk_download(df, link_column, csv_name, file_name_columns, zip_name)
+    with open(f"{zip_name}.zip", "rb") as fp:
+        btn = st.download_button(
+            label="Download files as .zip",
+            data=fp,
+            file_name=f"{zip_name}.zip",
+            mime="application/zip",
+        )
+
+
+def convert_df(df):
+    # IMPORTANT: Cache the conversion to prevent computation on every rerun
+    return df.to_csv().encode("utf-8")
+
+
+# TODO
+## Figure out a way to use Streamlit's
