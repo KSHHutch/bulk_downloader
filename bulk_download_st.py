@@ -46,6 +46,7 @@ def bulk_download(df, link_column, uploaded_file, file_name_columns, path):
     path = path
     link_column = link_column
     df = df.copy()
+    df = df.astype("str")
 
     # Make output folder
     try:
