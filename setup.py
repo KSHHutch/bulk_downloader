@@ -1,11 +1,12 @@
 from setuptools import setup
 
-APP = ["bulk_downloader_pyside.py"]
+APP = ["bulk_download_pyside.py"]
 DATA_FILES = []
 OPTIONS = {
     "argv_emulation": True,
     "packages": ["PySide6", "pandas", "requests"],
     "iconfile": "downloader.icns",
+    "excludes": ["psycopg2"],
 }
 
 setup(

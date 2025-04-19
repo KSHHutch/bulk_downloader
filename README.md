@@ -10,11 +10,15 @@ It downloads files to the app, then zips it up. After that process is finished a
 
 Streamlit version was being finicky, created versions meant to be run locally. GUIs constructed using tkinter and pyside (mostly as a learning project for me). PySide6 app is much more performant and better looking to boot, tkinter does have the advantage of fewer to no dependencies.
 
-`setup.py` file is for packaging using `py2app`.
-Can create a proper MacOS app bundle by running
+Tried py2app and pyinstaller for distribution. py2app unfortunately didn't work, so I went with pyinstaller instead. Keeping the `setup.py` file around for reference.
+
+Bundled for using locally by running:
 
 ```bash
-python setup.py py2app
+pip install pyinstaller
+pyinstaller --name "BulkDownloader" \
+            --windowed \
+            --icon=downloader.icns \
+            --hidden-import PySide6 \
+            bulk_download_pyside.py
 ```
-
-so long as `setup.py` points to `bulk_download_pyside.py`.
